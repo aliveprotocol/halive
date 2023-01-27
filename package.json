@@ -1,0 +1,27 @@
+{
+  "name": "halive",
+  "version": "1.0.0",
+  "description": "HAF-based Alive Protocol streams indexer and API server.",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aliveprotocol/halive.git"
+  },
+  "author": "techcoderx",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aliveprotocol/halive/issues"
+  },
+  "homepage": "https://github.com/aliveprotocol/halive#readme",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "log4js": "^6.7.1",
+    "pg": "^8.8.0",
+    "yargs": "^17.6.2"
+  }
+}
