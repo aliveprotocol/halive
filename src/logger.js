@@ -12,7 +12,7 @@ log4js.configure({
                 tokens: {
                     tab: (logEvent) => {
                         let filepath = logEvent.fileName.split('/')
-                        return ' '.repeat(Math.max(0,10-filepath[filepath.length-1].length+1+logEvent.lineNumber.toString().length))
+                        return ' '.repeat(Math.max(0,18-filepath[filepath.length-1].length+1-logEvent.lineNumber.toString().length-logEvent.level.levelStr.length))
                     }
                 }
             }
