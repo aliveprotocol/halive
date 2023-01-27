@@ -8,7 +8,13 @@ log4js.configure({
             type: 'stdout',
             layout: {
                 type: 'pattern',
-                pattern: '%[%d [%p]%] %m',
+                pattern: '%[%d [%p] %f{1}:%l%] %x{tab}%m',
+                tokens: {
+                    tab: (logEvent) => {
+                        let filepath = logEvent.fileName.split('/')
+                        return ' '.repeat(Math.max(0,10-filepath[filepath.length-1].length+1+logEvent.lineNumber.toString().length))
+                    }
+                }
             }
         },
         file: {
@@ -22,7 +28,8 @@ log4js.configure({
     categories: { 
         default: { 
             appenders: ['out', 'file'],
-            level: haliveConfig.log_level
+            level: haliveConfig.log_level,
+            enableCallStack: true
         }
     }
 })
