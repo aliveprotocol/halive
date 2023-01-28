@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS halive_app.streams(
     l2_pub VARCHAR(100),
     storage_protocol INTEGER NOT NULL,
     ended BOOLEAN NOT NULL DEFAULT FALSE,
-    UNIQUE(streamer, link)
+    CONSTRAINT streams_streamer_link_unique UNIQUE(streamer, link)
 );
 
 CREATE TABLE IF NOT EXISTS halive_app.hls_segments(
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS halive_app.hls_segments(
     stream_id INTEGER NOT NULL,
     seq INTEGER NOT NULL,
     src_hash VARCHAR(64),
-    UNIQUE(stream_id,seq)
+    CONSTRAINT hls_sgmt_stream_id_seq_unique UNIQUE(stream_id, seq)
 );
 
 CREATE TABLE IF NOT EXISTS halive_app.state(
