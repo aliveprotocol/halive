@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import { dirname } from 'path'
 import { fileURLToPath } from 'url'
-import { HAF_APP_VERSION } from './constants.js'
+import { DB_VERSION } from './constants.js'
 import db from './db.js'
 import context from './context.js'
 import logger from './logger.js'
@@ -65,7 +65,7 @@ const schema = {
         await db.client.query(`INSERT INTO ${SCHEMA_NAME}.l2_protocols(protocol_name) VALUES('gundb');`)
         await db.client.query(`INSERT INTO ${SCHEMA_NAME}.storage_protocols(protocol_name) VALUES('ipfs');`)
         await db.client.query(`INSERT INTO ${SCHEMA_NAME}.storage_protocols(protocol_name) VALUES('skynet');`)
-        await db.client.query(`INSERT INTO ${SCHEMA_NAME}.state(last_processed_block, db_version) VALUES(0, $1);`,[HAF_APP_VERSION])
+        await db.client.query(`INSERT INTO ${SCHEMA_NAME}.state(last_processed_block, db_version) VALUES(0, $1);`,[DB_VERSION])
 
         // create relevant functions
         await schema.createFx()

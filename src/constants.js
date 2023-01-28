@@ -1,4 +1,4 @@
-export const HAF_APP_VERSION = 1
+export const DB_VERSION = 1
 export const APP_CONTEXT = 'halive_app'
 export const ALIVEDB_PUBKEY_MAX_LENGTH = 100
 export const CUSTOM_JSON_ID = 'alive-test'
