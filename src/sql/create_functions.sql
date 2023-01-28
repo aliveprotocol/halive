@@ -48,7 +48,7 @@ BEGIN
 
     SELECT next_stream_id INTO _streamer_next_stream_id FROM halive_app.streamer WHERE id=_hive_user_id;
     IF _streamer_next_stream_id IS NULL THEN
-        _streamer_next_stream_id = 0
+        _streamer_next_stream_id = 0;
     END IF;
     IF _streamer_next_stream_id = 0 THEN
         INSERT INTO halive_app.streamer(id, next_stream_id) VALUES(_hive_user_id, 0);
