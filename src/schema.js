@@ -67,11 +67,18 @@ const schema = {
         await db.client.query(`INSERT INTO ${SCHEMA_NAME}.storage_protocols(protocol_name) VALUES('skynet');`)
         await db.client.query(`INSERT INTO ${SCHEMA_NAME}.state(last_processed_block, db_version) VALUES(0, $1);`,[HAF_APP_VERSION])
 
+        // create relevant functions
+        await schema.createFx()
+
         logger.info('HAF app database set up successfully!')
     },
     loaded: async () => {
         let schemaTbls = await db.client.query('SELECT 1 FROM pg_catalog.pg_tables WHERE schemaname=$1;',[SCHEMA_NAME])
         return schemaTbls.rowCount > 0
+    },
+    createFx: async () => {
+        await db.client.query(fs.readFileSync(__dirname+'/sql/create_functions.sql','utf-8'))
+        logger.info('Created relevant PL/pgSQL functions and types')
     },
     fkExists: async (fk) => {
         let constraint = await db.client.query('SELECT * FROM information_schema.constraint_column_usage WHERE constraint_name=$1',[fk])
