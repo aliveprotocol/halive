@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import { dirname } from 'path'
 import { fileURLToPath } from 'url'
-import { START_BLOCK, DB_VERSION } from './constants.js'
+import { START_BLOCK, DB_VERSION, APP_CONTEXT } from './constants.js'
 import db from './db.js'
 import context from './context.js'
 import logger from './logger.js'
@@ -57,6 +57,10 @@ const schema = {
         // inheritance for forking app
         for (let t in HAF_TABLES)
             await db.client.query(`ALTER TABLE ${SCHEMA_NAME}.${HAF_TABLES[t]} INHERIT hive.${SCHEMA_NAME};`)
+
+        // use 'accounts' state provider
+        await db.client.query(`SELECT hive.app_state_provider_import('ACCOUNTS',$1);`,[APP_CONTEXT])
+        logger.info('Imported accounts state provider')
 
         // detach app context
         await context.detach()

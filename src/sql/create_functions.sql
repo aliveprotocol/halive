@@ -43,7 +43,7 @@ DECLARE
     _chunk_finalized INTEGER = NULL;
     _ended BOOLEAN = FALSE;
 BEGIN
-    SELECT id INTO _hive_user_id FROM hive.halive_app_accounts_view WHERE name=_streamer_username;
+    SELECT id INTO _hive_user_id FROM hive.halive_app_accounts WHERE name=_streamer_username;
     IF _hive_user_id IS NULL THEN
         RAISE EXCEPTION 'Could not process non-existent streamer %', _streamer_username;
     END IF;
@@ -101,7 +101,7 @@ $function$
 DECLARE
     _hive_user_id INTEGER = NULL;
 BEGIN
-    SELECT id INTO _hive_user_id FROM hive.halive_app_accounts_view WHERE name=_streamer_username;
+    SELECT id INTO _hive_user_id FROM hive.halive_app_accounts WHERE name=_streamer_username;
     IF _hive_user_id IS NULL THEN
         RAISE EXCEPTION 'Could not process non-existent streamer %', _streamer_username;
     END IF;
@@ -128,7 +128,7 @@ DECLARE
     _streamer_next_stream_id INTEGER = NULL;
     _existing_stream BOOLEAN = FALSE;
 BEGIN
-    SELECT id INTO _hive_user_id FROM hive.halive_app_accounts_view WHERE name=_streamer_username;
+    SELECT id INTO _hive_user_id FROM hive.halive_app_accounts WHERE name=_streamer_username;
     IF _hive_user_id IS NULL THEN
         RAISE EXCEPTION 'Could not process non-existent streamer %', _streamer_username;
     END IF;

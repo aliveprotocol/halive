@@ -3,9 +3,10 @@ import context from './context.js'
 import logger from './logger.js'
 import processor from './processor.js'
 import protocols from './protocols.js'
+import { APP_CONTEXT } from './constants.js'
 
 const MASSIVE_SYNC_THRESHOLD = 100
-const MASSIVE_SYNC_BATCH = 100
+const MASSIVE_SYNC_BATCH = 1000
 
 const sync = {
     terminating: false,
@@ -41,6 +42,7 @@ const sync = {
         if (sync.terminating) return sync.close()
         let start = new Date().getTime()
         await db.client.query('START TRANSACTION;')
+        await db.client.query('SELECT hive.app_state_providers_update($1,$2,$3);',[firstBlock,lastBlock,APP_CONTEXT])
         let ops = await db.client.query('SELECT * FROM halive_app.enum_op($1,$2);',[firstBlock,lastBlock])
         let count = 0
         for (let op in ops.rows) {
@@ -74,6 +76,7 @@ const sync = {
 
         let start = new Date().getTime()
         await db.client.query('START TRANSACTION;')
+        await db.client.query('SELECT hive.app_state_providers_update($1,$2,$3);',[nextBlock,nextBlock,APP_CONTEXT])
         let ops = await db.client.query('SELECT * FROM halive_app.enum_op($1,$2);',[nextBlock,nextBlock])
         let count = 0
         for (let op in ops.rows) {
