@@ -12,8 +12,6 @@ const handleExit = async () => {
     sync.terminating = true
     process.stdout.write('\r')
     logger.info('Received SIGINT')
-    await db.disconnect()
-    process.exit(0)
 }
 
 process.on('SIGINT', handleExit)

@@ -19,12 +19,12 @@ const sync = {
         sync.begin()
     },
     begin: async () => {
-        if (sync.terminating) return
+        if (sync.terminating) return sync.close()
 
         // query next block
         let nextBlocks = await context.nextBlocks()
-        if (nextBlocks.first_block === null)
-            return sync.begin()
+        if (nextBlocks.first_block === null) 
+            return setTimeout(() => sync.begin(),1000)
 
         let firstBlock = nextBlocks.first_block
         let lastBlock = nextBlocks.last_block
@@ -38,7 +38,7 @@ const sync = {
             sync.live()
     },
     massive: async (firstBlock,lastBlock,targetBlock) => {
-        if (sync.terminating) return
+        if (sync.terminating) return sync.close()
         await db.client.query('START TRANSACTION;')
         let ops = await db.client.query('SELECT * FROM halive_app.enum_op($1,$2);',[firstBlock,lastBlock])
         let count = 0
@@ -52,16 +52,41 @@ const sync = {
         logger.debug('Commited ['+firstBlock+','+lastBlock+'] successfully')
         logger.info('Massive Sync - Block #'+firstBlock+' to #'+lastBlock+' / '+targetBlock+' - '+count+' ops')
         if (lastBlock >= targetBlock)
-            sync.postMassive()
+            sync.postMassive(targetBlock)
         else
             sync.massive(lastBlock+1,Math.min(lastBlock+MASSIVE_SYNC_BATCH,targetBlock),targetBlock)
     },
-    postMassive: async () => {
+    postMassive: async (lastBlock) => {
         logger.info('Begin post-massive sync')
+        logger.info('Post-masstive sync complete, entering live sync')
+        await context.attach(lastBlock)
+        sync.live()
     },
     live: async () => {
+        if (sync.terminating) return sync.close()
 
+        // query next blocks
+        let nextBlock = (await context.nextBlocks()).first_block
+        if (nextBlock === null) 
+            return setTimeout(() => sync.live(),500)
+
+        await db.client.query('START TRANSACTION;')
+        let ops = await db.client.query('SELECT * FROM halive_app.enum_op($1,$2);',[nextBlock,nextBlock])
+        let count = 0
+        for (let op in ops.rows) {
+            let processed = await processor.process(ops.rows[op])
+            if (processed)
+                count++
+        }
+        await db.client.query('UPDATE halive_app.state SET last_processed_block=$1;',[nextBlock])
+        await db.client.query('COMMIT;')
+        logger.info('Alive - Block #'+nextBlock+' - '+count+' ops')
+        sync.live()
     },
+    close: async () => {
+        await db.disconnect()
+        process.exit(0)
+    }
 }
 
 export default sync
