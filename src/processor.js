@@ -34,7 +34,7 @@ const processor = {
                     if (stream.rowCount === 0 || stream.rows[0].ended)
                         return { valid: false }
                     details.seq = parseInt(payload.seq)
-                    if (isNaN(details.seq) || (typeof stream.rows[0].chunk_finalized === 'number' && (stream.rows[0].chunk_finalized >= details.seq || details.seq > MAX_CHUNKS)))
+                    if (isNaN(details.seq) || details.seq < 0 || (typeof stream.rows[0].chunk_finalized === 'number' && (stream.rows[0].chunk_finalized >= details.seq || details.seq > MAX_CHUNKS)))
                         return { valid: false }
                     details.src = payload.src || null
                     for (let q in SUPPORTED_RES)
