@@ -27,7 +27,11 @@ const processor = {
                 link: payload.link
             }
             switch (payload.op) {
+                case 1:
+                    // end stream
+                    return details
                 case 2:
+                    // configure/update stream
                     let inStorageProto = typeof payload.storage === 'string' ? payload.storage.trim().toLowerCase() : protocols.defaults.storage
                     let inL2Proto = typeof payload.l2 === 'string' ? payload.l2.trim().toLowerCase() : null
                     details.storage = Number.isInteger(protocols.map.storage[inStorageProto]) ? protocols.map.storage[inStorageProto] : protocols.defaults.storage
@@ -49,6 +53,9 @@ const processor = {
         if (result.valid) {
             logger.trace('Processing op',result)
             switch (result.op) {
+                case 1:
+                    await db.client.query('SELECT halive_app.process_stream_end($1,$2);',[result.streamer,result.link])
+                    break
                 case 2:
                     await db.client.query('SELECT halive_app.process_stream_update($1,$2,$3,$4,$5);',[result.streamer,result.link,result.l2,result.l2_pub,result.storage])
                     break

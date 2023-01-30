@@ -26,6 +26,28 @@ END
 $function$
 LANGUAGE plpgsql STABLE;
 
+CREATE OR REPLACE FUNCTION halive_app.process_stream_end(
+    _streamer_username VARCHAR,
+    _stream_link VARCHAR
+)
+RETURNS void
+AS
+$function$
+DECLARE
+    _hive_user_id INTEGER = NULL;
+BEGIN
+    SELECT id INTO _hive_user_id FROM hive.halive_app_accounts_view WHERE name=_streamer_username;
+    IF _hive_user_id IS NULL THEN
+        RAISE EXCEPTION 'Could not process non-existent streamer %', _streamer_username;
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM halive_app.streams WHERE streamer=_hive_user_id AND link=_stream_link) THEN
+        UPDATE halive_app.streams SET ended=TRUE WHERE streamer=_hive_user_id AND link=_stream_link;
+    END IF;
+END
+$function$
+LANGUAGE plpgsql VOLATILE;
+
 CREATE OR REPLACE FUNCTION halive_app.process_stream_update(
     IN _streamer_username VARCHAR,
     IN _stream_link VARCHAR,
