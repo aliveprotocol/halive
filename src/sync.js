@@ -39,6 +39,7 @@ const sync = {
     },
     massive: async (firstBlock,lastBlock,targetBlock) => {
         if (sync.terminating) return sync.close()
+        let start = new Date().getTime()
         await db.client.query('START TRANSACTION;')
         let ops = await db.client.query('SELECT * FROM halive_app.enum_op($1,$2);',[firstBlock,lastBlock])
         let count = 0
@@ -49,8 +50,9 @@ const sync = {
         }
         await db.client.query('UPDATE halive_app.state SET last_processed_block=$1;',[lastBlock])
         await db.client.query('COMMIT;')
+        let timeTaken = (new Date().getTime()-start)/1000
         logger.debug('Commited ['+firstBlock+','+lastBlock+'] successfully')
-        logger.info('Massive Sync - Block #'+firstBlock+' to #'+lastBlock+' / '+targetBlock+' - '+count+' ops')
+        logger.info('Massive Sync - Block #'+firstBlock+' to #'+lastBlock+' / '+targetBlock+' - '+count+' ops - '+((lastBlock-firstBlock)/timeTaken).toFixed(3)+'b/s, '+(count/timeTaken).toFixed(3)+'op/s')
         if (lastBlock >= targetBlock)
             sync.postMassive(targetBlock)
         else
@@ -70,6 +72,7 @@ const sync = {
         if (nextBlock === null) 
             return setTimeout(() => sync.live(),500)
 
+        let start = new Date().getTime()
         await db.client.query('START TRANSACTION;')
         let ops = await db.client.query('SELECT * FROM halive_app.enum_op($1,$2);',[nextBlock,nextBlock])
         let count = 0
@@ -80,7 +83,8 @@ const sync = {
         }
         await db.client.query('UPDATE halive_app.state SET last_processed_block=$1;',[nextBlock])
         await db.client.query('COMMIT;')
-        logger.info('Alive - Block #'+nextBlock+' - '+count+' ops')
+        let timeTakenMs = new Date().getTime()-start
+        logger.info('Alive - Block #'+nextBlock+' - '+count+' ops - '+timeTakenMs+'ms')
         sync.live()
     },
     close: async () => {
