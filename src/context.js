@@ -30,6 +30,9 @@ const context = {
             logger.info('App context detached successfully')
         } else
             logger.info('App context already detached, skipping')
+    },
+    nextBlocks: async () => {
+        return (await db.client.query('SELECT * FROM hive.app_next_block($1);',[APP_CONTEXT])).rows[0]
     }
 }
 

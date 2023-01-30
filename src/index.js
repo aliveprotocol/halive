@@ -1,16 +1,15 @@
 import logger from './logger.js'
 import db from './db.js'
 import schema from './schema.js'
-
-let terminating = false
+import sync from './sync.js'
 
 await db.init()
 if (!(await schema.loaded()))
     await schema.setup()
 
 const handleExit = async () => {
-    if (terminating) return
-    terminating = true
+    if (sync.terminating) return
+    sync.terminating = true
     process.stdout.write('\r')
     logger.info('Received SIGINT')
     await db.disconnect()
@@ -19,3 +18,5 @@ const handleExit = async () => {
 
 process.on('SIGINT', handleExit)
 process.on('SIGTERM', handleExit)
+
+sync.prebegin()
