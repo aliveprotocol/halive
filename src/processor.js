@@ -1,4 +1,4 @@
-import { ALIVEDB_PUBKEY_MAX_LENGTH, CUSTOM_JSON_ID, OP_CODES } from './constants.js'
+import { ALIVEDB_PUBKEY_MAX_LENGTH, CUSTOM_JSON_ID, MAX_CHUNKS, MAX_SEGMENT_LENGTH_NINCL, OP_CODES, SUPPORTED_RES } from './constants.js'
 import protocols from './protocols.js'
 import db from './db.js'
 import logger from './logger.js'
@@ -27,6 +27,28 @@ const processor = {
                 link: payload.link
             }
             switch (payload.op) {
+                case 0:
+                    // push stream
+                    let userId = await db.client.query('SELECT id FROM hive.halive_app_accounts_view WHERE name=$1;',[details.streamer])
+                    let stream = await db.client.query('SELECT * FROM halive_app.streams WHERE streamer=$1 AND link=$2;',[userId.rows[0].id,details.link])
+                    if (stream.rowCount === 0 || stream.rows[0].ended)
+                        return { valid: false }
+                    details.seq = parseInt(payload.seq)
+                    if (typeof stream.rows[0].chunk_finalized === 'number' && (stream.rows[0].chunk_finalized >= details.seq || details.seq > MAX_CHUNKS))
+                        return { valid: false }
+                    details.src = payload.src || null
+                    for (let q in SUPPORTED_RES)
+                        if (payload[SUPPORTED_RES[q]])
+                            details[SUPPORTED_RES[q]] = payload[SUPPORTED_RES[q]]
+                    if (payload.len) {
+                        details.len = parseFloat(payload.len)
+                        if (isNaN(details.len))
+                            return { valid: false } // should we treat invalid lengths as batched chunk instead?
+                        else if (details.len >= MAX_SEGMENT_LENGTH_NINCL || details.len <= 0)
+                            return { valid: false } // ignore invalid lengths
+                        details.len = parseFloat(details.len.toFixed(6))
+                    }
+                    return details
                 case 1:
                     // end stream
                     return details
@@ -53,6 +75,9 @@ const processor = {
         if (result.valid) {
             logger.trace('Processing op',result)
             switch (result.op) {
+                case 0:
+                    await db.client.query('SELECT halive_app.process_stream_push($1,$2,$3,$4,$5);',[result.streamer,result.link,result.seq,result.len,result.src])
+                    break
                 case 1:
                     await db.client.query('SELECT halive_app.process_stream_end($1,$2);',[result.streamer,result.link])
                     break

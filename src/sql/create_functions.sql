@@ -26,6 +26,71 @@ END
 $function$
 LANGUAGE plpgsql STABLE;
 
+CREATE OR REPLACE FUNCTION halive_app.process_stream_push(
+    _streamer_username VARCHAR,
+    _stream_link VARCHAR,
+    _sequence INTEGER,
+    _length NUMERIC,
+    _src_hash VARCHAR
+)
+RETURNS void
+AS
+$function$
+DECLARE
+    _hive_user_id INTEGER = NULL;
+    _stream_id INTEGER = NULL;
+    _chunk_head INTEGER = NULL;
+    _chunk_finalized INTEGER = NULL;
+    _ended BOOLEAN = FALSE;
+BEGIN
+    SELECT id INTO _hive_user_id FROM hive.halive_app_accounts_view WHERE name=_streamer_username;
+    IF _hive_user_id IS NULL THEN
+        RAISE EXCEPTION 'Could not process non-existent streamer %', _streamer_username;
+    END IF;
+
+    SELECT id, chunk_finalized, chunk_head, ended
+        INTO _stream_id, _chunk_finalized, _chunk_head, _ended
+        FROM halive_app.streams
+        WHERE streamer=_hive_user_id AND link=_stream_link;
+    IF _ended IS TRUE THEN
+        RAISE EXCEPTION 'Could not push stream to ended livestream %/%', _streamer_username, _stream_link;
+    ELSIF _chunk_finalized IS NOT NULL AND _sequence <= _chunk_finalized THEN
+        RAISE EXCEPTION 'Could not overwrite past stream chunks that are finalized';
+    ELSIF _ended IS TRUE THEN
+        RAISE EXCEPTION 'Cannot push new stream chunks to an ended stream';
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM halive_app.hls_segments WHERE stream_id=_stream_id AND seq=_sequence) THEN
+        INSERT INTO halive_app.hls_segments(stream_id, seq, len, src_hash)
+            VALUES(_stream_id, _sequence, _length, _src_hash);
+    ELSE
+        UPDATE halive_app.hls_segments SET len=_length, src_hash=_src_hash WHERE stream_id=_stream_id AND seq=_sequence;
+    END IF;
+
+    IF _chunk_finalized IS NULL THEN
+        UPDATE halive_app.streams SET chunk_head=_sequence, chunk_finalized=_sequence WHERE id=_stream_id;
+    ELSIF _chunk_finalized = _chunk_head THEN
+        IF _sequence = _chunk_finalized+1 THEN
+            UPDATE halive_app.streams SET chunk_finalized=_chunk_finalized+1, chunk_head=_chunk_head+1 WHERE id=_stream_id;
+        ELSIF _sequence > _chunk_finalized+1 THEN
+            UPDATE halive_app.streams SET chunk_head=_sequence WHERE id=_stream_id;
+        END IF;
+    ELSIF _sequence > _chunk_head THEN
+        UPDATE halive_app.streams SET chunk_head=_sequence WHERE id=_stream_id;
+    ELSIF _sequence > _chunk_finalized AND _sequence <= _chunk_head THEN
+        FOR __seq IN (_chunk_finalized+1).._chunk_head LOOP
+            IF EXISTS (SELECT 1 FROM halive_app.hls_segments WHERE stream_id=_stream_id AND seq=__seq) THEN
+                _chunk_finalized = _chunk_finalized+1;
+            ELSE
+                EXIT;
+            END IF;
+        END LOOP;
+        UPDATE halive_app.streams SET chunk_finalized=_chunk_finalized WHERE id=_stream_id;
+    END IF;
+END
+$function$
+LANGUAGE plpgsql VOLATILE;
+
 CREATE OR REPLACE FUNCTION halive_app.process_stream_end(
     _streamer_username VARCHAR,
     _stream_link VARCHAR

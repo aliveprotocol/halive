@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS halive_app.hls_segments(
     id SERIAL PRIMARY KEY,
     stream_id INTEGER NOT NULL,
     seq INTEGER NOT NULL,
+    len NUMERIC(8,6),
     src_hash VARCHAR(64),
     CONSTRAINT hls_sgmt_stream_id_seq_unique UNIQUE(stream_id, seq)
 );
