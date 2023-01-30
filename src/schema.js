@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import { dirname } from 'path'
 import { fileURLToPath } from 'url'
-import { DB_VERSION } from './constants.js'
+import { START_BLOCK, DB_VERSION } from './constants.js'
 import db from './db.js'
 import context from './context.js'
 import logger from './logger.js'
@@ -61,11 +61,15 @@ const schema = {
         // detach app context
         await context.detach()
 
+        // start block
+        let startBlock = Math.max(START_BLOCK-1,0)
+        logger.info('Set start block to #'+(startBlock+1))
+
         // fill with initial values
         await db.client.query(`INSERT INTO ${SCHEMA_NAME}.l2_protocols(protocol_name) VALUES('gundb');`)
         await db.client.query(`INSERT INTO ${SCHEMA_NAME}.storage_protocols(protocol_name) VALUES('ipfs');`)
         await db.client.query(`INSERT INTO ${SCHEMA_NAME}.storage_protocols(protocol_name) VALUES('skynet');`)
-        await db.client.query(`INSERT INTO ${SCHEMA_NAME}.state(last_processed_block, db_version) VALUES(0, $1);`,[DB_VERSION])
+        await db.client.query(`INSERT INTO ${SCHEMA_NAME}.state(last_processed_block, db_version) VALUES($1, $2);`,[startBlock,DB_VERSION])
 
         // create relevant functions
         await schema.createFx()
