@@ -1,4 +1,4 @@
-import { ALIVEDB_PUBKEY_MAX_LENGTH, CUSTOM_JSON_ID, MAX_CHUNKS, MAX_SEGMENT_LENGTH_NINCL, OP_CODES, SUPPORTED_RES } from './constants.js'
+import { ALIVEDB_PUBKEY_MAX_LENGTH, CUSTOM_JSON_ID, MAX_CHUNKS, MAX_SEGMENT_LENGTH_NINCL, MAX_STORAGE_GW_LENGTH, OP_CODES, SUPPORTED_RES } from './constants.js'
 import protocols from './protocols.js'
 import db from './db.js'
 import logger from './logger.js'
@@ -61,6 +61,8 @@ const processor = {
                     details.l2 = Number.isInteger(protocols.map.l2[inL2Proto]) ? protocols.map.l2[inL2Proto] : null
                     if (typeof payload.pub === 'string' && payload.pub.length <= ALIVEDB_PUBKEY_MAX_LENGTH)
                         details.l2_pub = payload.pub
+                    if (typeof payload.gw === 'string' && payload.gw.length <= MAX_STORAGE_GW_LENGTH)
+                        details.gw = payload.gw
                     return details
                 default:
                     logger.trace('Unhandled operation type '+payload.op+' in block #'+op.block_num+', op id: '+op.id)
@@ -83,7 +85,7 @@ const processor = {
                     await db.client.query('SELECT halive_app.process_stream_end($1,$2,$3);',[result.streamer,result.link,result.ts])
                     break
                 case 2:
-                    await db.client.query('SELECT halive_app.process_stream_update($1,$2,$3,$4,$5,$6);',[result.streamer,result.link,result.l2,result.l2_pub,result.storage,result.ts])
+                    await db.client.query('SELECT halive_app.process_stream_update($1,$2,$3,$4,$5,$6,$7);',[result.streamer,result.link,result.l2,result.l2_pub,result.storage,result.gw,result.ts])
                     break
                 default:
                     break

@@ -122,6 +122,7 @@ CREATE OR REPLACE FUNCTION halive_app.process_stream_update(
     IN _l2_protocol INTEGER,
     IN _l2_pub VARCHAR,
     IN _storage_protocol INTEGER,
+    IN _storage_gw VARCHAR,
     IN _ts TIMESTAMP
 )
 RETURNS void
@@ -155,6 +156,7 @@ BEGIN
         UPDATE halive_app.streams SET
             l2_protocol = COALESCE(_l2_protocol, l2_protocol),
             l2_pub = COALESCE(_l2_pub, l2_pub),
+            storage_gw = COALESCE(_storage_gw, storage_gw),
             last_updated = _ts
         WHERE streamer=_hive_user_id AND link=_stream_link;
     ELSE

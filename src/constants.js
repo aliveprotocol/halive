@@ -6,6 +6,7 @@ export const MAX_CHUNK_BYTES = 4200
 export const MAX_CHUNKS = 17280
 export const MAX_LINK_LENGTH = 50
 export const MAX_SEGMENT_LENGTH_NINCL = 100
+export const MAX_STORAGE_GW_LENGTH = 100
 export const OP_CODES = [
     'PUSH_STREAM',
     'END_STREAM',

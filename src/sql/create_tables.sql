@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS halive_app.streams(
     l2_protocol INTEGER,
     l2_pub VARCHAR(100),
     storage_protocol INTEGER NOT NULL,
+    storage_gw VARCHAR(100),
     ended BOOLEAN NOT NULL DEFAULT FALSE,
     CONSTRAINT streams_streamer_link_unique UNIQUE(streamer, link)
 );
