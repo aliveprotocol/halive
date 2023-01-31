@@ -17,7 +17,7 @@ const HAF_FKS = {
     streamer_fk: {
         table: SCHEMA_NAME+'.streamer',
         fk: 'id',
-        ref: 'hive.accounts(id)'
+        ref: 'hive.halive_app_accounts(id)'
     },
     streams_streamer_fk: {
         table: SCHEMA_NAME+'.streams',

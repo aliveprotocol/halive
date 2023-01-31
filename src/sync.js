@@ -1,4 +1,5 @@
 import db from './db.js'
+import schema from './schema.js'
 import context from './context.js'
 import logger from './logger.js'
 import processor from './processor.js'
@@ -62,6 +63,7 @@ const sync = {
     },
     postMassive: async (lastBlock) => {
         logger.info('Begin post-massive sync')
+        await schema.fkCreate()
         logger.info('Post-masstive sync complete, entering live sync')
         await context.attach(lastBlock)
         sync.live()
