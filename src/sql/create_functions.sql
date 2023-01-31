@@ -31,7 +31,8 @@ CREATE OR REPLACE FUNCTION halive_app.process_stream_push(
     _stream_link VARCHAR,
     _sequence INTEGER,
     _length NUMERIC,
-    _src_hash VARCHAR
+    _src_hash VARCHAR,
+    _ts TIMESTAMP
 )
 RETURNS void
 AS
@@ -68,7 +69,7 @@ BEGIN
     END IF;
 
     IF _chunk_finalized IS NULL THEN
-        UPDATE halive_app.streams SET chunk_head=_sequence, chunk_finalized=_sequence WHERE id=_stream_id;
+        UPDATE halive_app.streams SET chunk_head=_sequence, chunk_finalized=_sequence, first_streamed=_ts WHERE id=_stream_id;
     ELSIF _chunk_finalized = _chunk_head THEN
         IF _sequence = _chunk_finalized+1 THEN
             UPDATE halive_app.streams SET chunk_finalized=_chunk_finalized+1, chunk_head=_chunk_head+1 WHERE id=_stream_id;
@@ -87,13 +88,15 @@ BEGIN
         END LOOP;
         UPDATE halive_app.streams SET chunk_finalized=_chunk_finalized WHERE id=_stream_id;
     END IF;
+    UPDATE halive_app.streams SET last_streamed=_ts WHERE id=_stream_id;
 END
 $function$
 LANGUAGE plpgsql VOLATILE;
 
 CREATE OR REPLACE FUNCTION halive_app.process_stream_end(
     _streamer_username VARCHAR,
-    _stream_link VARCHAR
+    _stream_link VARCHAR,
+    _ts TIMESTAMP
 )
 RETURNS void
 AS
@@ -107,7 +110,7 @@ BEGIN
     END IF;
 
     IF EXISTS (SELECT 1 FROM halive_app.streams WHERE streamer=_hive_user_id AND link=_stream_link) THEN
-        UPDATE halive_app.streams SET ended=TRUE WHERE streamer=_hive_user_id AND link=_stream_link;
+        UPDATE halive_app.streams SET ended=TRUE, last_updated=_ts WHERE streamer=_hive_user_id AND link=_stream_link;
     END IF;
 END
 $function$
@@ -118,7 +121,8 @@ CREATE OR REPLACE FUNCTION halive_app.process_stream_update(
     IN _stream_link VARCHAR,
     IN _l2_protocol INTEGER,
     IN _l2_pub VARCHAR,
-    IN _storage_protocol INTEGER
+    IN _storage_protocol INTEGER,
+    IN _ts TIMESTAMP
 )
 RETURNS void
 AS
@@ -150,11 +154,12 @@ BEGIN
     IF _existing_stream IS TRUE THEN
         UPDATE halive_app.streams SET
             l2_protocol = COALESCE(_l2_protocol, l2_protocol),
-            l2_pub = COALESCE(_l2_pub, l2_pub)
+            l2_pub = COALESCE(_l2_pub, l2_pub),
+            last_updated = _ts
         WHERE streamer=_hive_user_id AND link=_stream_link;
     ELSE
-        INSERT INTO halive_app.streams(id, streamer, link, l2_protocol, l2_pub, storage_protocol)
-            VALUES(_streamer_next_stream_id, _hive_user_id, _stream_link, _l2_protocol, _l2_pub, _storage_protocol);
+        INSERT INTO halive_app.streams(id, streamer, link, created, last_updated, l2_protocol, l2_pub, storage_protocol)
+            VALUES(_streamer_next_stream_id, _hive_user_id, _stream_link, _ts, _ts, _l2_protocol, _l2_pub, _storage_protocol);
         UPDATE halive_app.streamer SET next_stream_id=_streamer_next_stream_id+1 WHERE halive_app.streamer.id=_hive_user_id;
     END IF;
 END

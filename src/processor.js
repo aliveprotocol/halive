@@ -23,13 +23,14 @@ const processor = {
             let details = {
                 valid: true,
                 op: payload.op,
+                ts: new Date(op.created_at),
                 streamer: parsed.value.required_posting_auths[0],
                 link: payload.link
             }
             switch (payload.op) {
                 case 0:
                     // push stream
-                    let userId = await db.client.query('SELECT id FROM hive.halive_app_accounts_view WHERE name=$1;',[details.streamer])
+                    let userId = await db.client.query('SELECT id FROM hive.halive_app_accounts WHERE name=$1;',[details.streamer])
                     let stream = await db.client.query('SELECT * FROM halive_app.streams WHERE streamer=$1 AND link=$2;',[userId.rows[0].id,details.link])
                     if (stream.rowCount === 0 || stream.rows[0].ended)
                         return { valid: false }
@@ -76,13 +77,13 @@ const processor = {
             logger.trace('Processing op',result)
             switch (result.op) {
                 case 0:
-                    await db.client.query('SELECT halive_app.process_stream_push($1,$2,$3,$4,$5);',[result.streamer,result.link,result.seq,result.len,result.src])
+                    await db.client.query('SELECT halive_app.process_stream_push($1,$2,$3,$4,$5,$6);',[result.streamer,result.link,result.seq,result.len,result.src,result.ts])
                     break
                 case 1:
-                    await db.client.query('SELECT halive_app.process_stream_end($1,$2);',[result.streamer,result.link])
+                    await db.client.query('SELECT halive_app.process_stream_end($1,$2,$3);',[result.streamer,result.link,result.ts])
                     break
                 case 2:
-                    await db.client.query('SELECT halive_app.process_stream_update($1,$2,$3,$4,$5);',[result.streamer,result.link,result.l2,result.l2_pub,result.storage])
+                    await db.client.query('SELECT halive_app.process_stream_update($1,$2,$3,$4,$5,$6);',[result.streamer,result.link,result.l2,result.l2_pub,result.storage,result.ts])
                     break
                 default:
                     break
