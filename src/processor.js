@@ -1,3 +1,4 @@
+import { cid as isCid } from 'is-ipfs'
 import { ALIVEDB_PUBKEY_MAX_LENGTH, CUSTOM_JSON_ID, MAX_CHUNKS, MAX_SEGMENT_LENGTH_NINCL, MAX_STORAGE_GW_LENGTH, OP_CODES, SUPPORTED_RES } from './constants.js'
 import protocols from './protocols.js'
 import db from './db.js'
@@ -37,7 +38,10 @@ const processor = {
                     details.seq = parseInt(payload.seq)
                     if (isNaN(details.seq) || details.seq < 0 || (typeof stream.rows[0].chunk_finalized === 'number' && (stream.rows[0].chunk_finalized >= details.seq || details.seq > MAX_CHUNKS)))
                         return { valid: false }
+                    if (stream.rows[0].storage_protocol === protocols.map.storage.ipfs && payload.src && !isCid(payload.src))
+                        return { valid: false }
                     details.src = payload.src || null
+                    // maybe we can optionally use a folder structure to save space on-chain for this
                     for (let q in SUPPORTED_RES)
                         if (payload[SUPPORTED_RES[q]])
                             details[SUPPORTED_RES[q]] = payload[SUPPORTED_RES[q]]
