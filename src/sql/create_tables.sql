@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS halive_app.streamer(
 
 CREATE TABLE IF NOT EXISTS halive_app.streams(
     hive_rowid BIGINT NOT NULL DEFAULT nextval('hive.halive_app_hive_rowid_seq'),
-    id INTEGER PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
+    st_id INTEGER NOT NULL,
     streamer INTEGER NOT NULL,
     link VARCHAR(50) NOT NULL,
     created TIMESTAMP NOT NULL,
@@ -36,6 +37,7 @@ CREATE TABLE IF NOT EXISTS halive_app.streams(
     storage_protocol INTEGER NOT NULL,
     storage_gw VARCHAR(100),
     ended BOOLEAN NOT NULL DEFAULT FALSE,
+    CONSTRAINT streams_streamer_stid_unique UNIQUE(streamer, st_id),
     CONSTRAINT streams_streamer_link_unique UNIQUE(streamer, link)
 );
 

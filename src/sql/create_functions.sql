@@ -160,7 +160,7 @@ BEGIN
             last_updated = _ts
         WHERE streamer=_hive_user_id AND link=_stream_link;
     ELSE
-        INSERT INTO halive_app.streams(id, streamer, link, created, last_updated, l2_protocol, l2_pub, storage_protocol)
+        INSERT INTO halive_app.streams(st_id, streamer, link, created, last_updated, l2_protocol, l2_pub, storage_protocol)
             VALUES(_streamer_next_stream_id, _hive_user_id, _stream_link, _ts, _ts, _l2_protocol, _l2_pub, _storage_protocol);
         UPDATE halive_app.streamer SET next_stream_id=_streamer_next_stream_id+1 WHERE halive_app.streamer.id=_hive_user_id;
     END IF;
