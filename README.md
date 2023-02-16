@@ -17,6 +17,11 @@ GRANT halive_user TO halive_app;
 ./scripts/postgrest_install.sh
 ```
 
+### PostgREST API methods
+```bash
+psql -f src/sql/create_apis.sql block_log
+```
+
 ## Sync
 ```bash
 npm start

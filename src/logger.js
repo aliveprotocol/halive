@@ -36,4 +36,5 @@ log4js.configure({
 
 let logger = log4js.getLogger()
 logger.info('Logger initialized')
+logger.info('NodeJS version: '+process.version)
 export default logger

@@ -8,6 +8,7 @@ let haliveConfig = {
     postgres_url: 'postgres://username:password@127.0.0.1:5432/block_log',
 
     // halive api server port
+    http_host: '127.0.0.1',
     http_port: 3010,
 
     // default endpoints for chunk content retrieval
