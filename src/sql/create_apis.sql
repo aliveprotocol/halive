@@ -83,3 +83,23 @@ BEGIN
 END
 $function$
 LANGUAGE plpgsql STABLE;
+
+DROP TYPE IF EXISTS halive_api.hls_segments_type CASCADE;
+CREATE TYPE halive_api.hls_segments_type AS (
+    seq INTEGER,
+    len NUMERIC,
+    src_hash VARCHAR
+);
+CREATE OR REPLACE FUNCTION halive_api.get_hls_segments(_stream_id INTEGER)
+RETURNS SETOF halive_api.hls_segments_type
+AS
+$function$
+BEGIN
+    RETURN QUERY
+        SELECT seq, len, src_hash
+        FROM halive_app.hls_segments
+        WHERE stream_id=_stream_id
+        ORDER BY seq;
+END
+$function$
+LANGUAGE plpgsql STABLE;

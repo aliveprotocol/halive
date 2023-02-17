@@ -31,3 +31,8 @@ npm start
 ```bash
 ./scripts/postgrest_start.sh postgres://halive_app:<halive_app_password>@localhost:5432/block_log <server_port>
 ```
+
+## Start Express server
+```bash
+npm run server
+```
