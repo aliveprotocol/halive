@@ -32,6 +32,7 @@ $function$
 DECLARE
     _hive_user_id INTEGER = NULL;
     _exists BOOLEAN = FALSE;
+    _st_id_glob INTEGER = NULL;
     _st_id INTEGER = NULL;
     _created TIMESTAMP;
     _last_updated TIMESTAMP;
@@ -59,13 +60,14 @@ BEGIN
         RETURN jsonb_build_object('error', 'Stream does not exist');
     END IF;
 
-    SELECT st_id, created, last_updated, first_streamed, last_streamed, chunk_finalized, chunk_head, l2_protocol, l2_pub, storage_protocol, storage_gw, ended
-        INTO _st_id, _created, _last_updated, _first_streamed, _last_streamed, _chunk_finalized, _chunk_head, _l2_protocol, _l2_pub, _storage_protocol, _storage_gw, _ended
+    SELECT id, st_id, created, last_updated, first_streamed, last_streamed, chunk_finalized, chunk_head, l2_protocol, l2_pub, storage_protocol, storage_gw, ended
+        INTO _st_id_glob, _st_id, _created, _last_updated, _first_streamed, _last_streamed, _chunk_finalized, _chunk_head, _l2_protocol, _l2_pub, _storage_protocol, _storage_gw, _ended
         FROM halive_app.streams
         WHERE streamer=_hive_user_id AND link=stream_link;
     
     RETURN jsonb_build_object(
-        'id', _st_id,
+        'id', _st_id_glob,
+        'st_id', _st_id,
         'streamer', stream_username,
         'link', stream_link,
         'created', _created,
