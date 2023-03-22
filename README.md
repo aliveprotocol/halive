@@ -2,6 +2,13 @@
 
 HAF-based Alive Protocol streams indexer and API server. Indexes Hive from a starting block number for Alive-related `custom_json` operations using the HAF app sync algorithm.
 
+## Required Dependencies
+
+* `nodejs` and `npm` (Latest LTS, v18 minimum supported)
+* Synced [HAF](https://gitlab.syncad.com/hive/haf) node
+
+A locally-running IPFS daemon is recommended for faster chunk fetching.
+
 ## Setup
 
 ### PostgreSQL Roles
