@@ -70,7 +70,21 @@ app.get('/stream/:author/:link', async (req,res) => {
     }
     if (stream.ended)
         m3u8File += '#EXT-X-ENDLIST'
-    // todo fetch from alivedb
+    else if (stream.l2_protocol === 'gundb' && stream.l2_pub) {
+        // fetch from alivedb
+        try {
+            let alivedbFetch = await fetch(`${haliveConfig.alivedb_url}/getStream?pub=${stream.l2_pub}&streamer=${req.params.author}&link=${req.params.link}&network=hive&ts=${new Date(stream.last_streamed).getTime()+1}`,{ method: 'GET' })
+            let alivedbResp = await alivedbFetch.json()
+            if (Array.isArray(alivedbResp))
+                for (let i in alivedbResp)
+                    if (typeof alivedbResp[i] === 'object' && !Array.isArray(alivedbResp[i]) && typeof alivedbResp[i].len === 'number' && typeof alivedbResp[i][quality] === 'string') {
+                        m3u8File += '#EXTINF:'+alivedbResp[i].len+',\n'
+                        m3u8File += gw+'/ipfs/'+alivedbResp[i][quality]+'\n'
+                    }
+        } catch {
+            // skip alivedb fetch if errored
+        }
+    }
     res.setHeader('Content-Type','text/plain')
     res.send(m3u8File)
 })

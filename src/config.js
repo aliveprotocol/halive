@@ -15,6 +15,9 @@ let haliveConfig = {
     ipfs_gateway: 'https://ipfs.io',
     skynet_webportal: 'https://siasky.net',
 
+    // alivedb endpoint
+    alivedb_url: 'http://localhost:3006',
+
     // fetch timeouts
     chunk_fetch_timeout: 20,
 
