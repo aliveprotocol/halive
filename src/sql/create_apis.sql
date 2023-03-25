@@ -112,8 +112,8 @@ RETURNS jsonb
 AS
 $function$
 DECLARE
-	c record;
-	stream_id INTEGER;
+    c record;
+    stream_id INTEGER;
     stream_info jsonb;
     chunks_arr jsonb[] DEFAULT '{}';
 BEGIN
@@ -121,7 +121,7 @@ BEGIN
     IF stream_info ? 'error' THEN
         RETURN stream_info;
     END IF;
-	stream_id := stream_info->'id';
+    stream_id := stream_info->'id';
     FOR c IN SELECT * FROM halive_api.get_hls_segments(stream_id) LOOP
         SELECT ARRAY_APPEND(chunks_arr, jsonb_build_object(
             'seq', c.seq,
