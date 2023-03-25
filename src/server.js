@@ -17,9 +17,9 @@ app.get('/', async (req,res) => {
 })
 
 app.get('/get_stream_info', async (req,res) => {
-    if (typeof req.query.author !== 'string' || typeof req.query.link !== 'string')
-        return res.status(400).send({ error: 'author and/or link is required' })
-    let streamQuery = await db.client.query('SELECT halive_api.get_stream_info($1,$2);',[req.query.author,req.query.link])
+    if (typeof req.query.stream_author !== 'string' || typeof req.query.stream_link !== 'string')
+        return res.status(400).send({ error: 'stream_author and stream_link is required' })
+    let streamQuery = await db.client.query('SELECT halive_api.get_stream_info($1,$2);',[req.query.stream_author,req.query.stream_link])
     if (streamQuery.rowCount === 0)
         return res.status(404).send({ error: 'stream not found' })
     let stream = streamQuery.rows[0].get_stream_info

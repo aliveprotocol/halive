@@ -4,7 +4,7 @@ GRANT USAGE ON SCHEMA halive_api TO halive_user;
 GRANT USAGE ON SCHEMA halive_app TO halive_user;
 GRANT SELECT ON ALL TABLES IN SCHEMA halive_api TO halive_user;
 GRANT SELECT ON ALL TABLES IN SCHEMA halive_app TO halive_user;
-GRANT SELECT ON TABLE halive_app_accounts IN SCHEMA hive TO halive_user;
+GRANT SELECT ON TABLE hive.halive_app_accounts TO halive_user;
 
 -- GET /
 CREATE OR REPLACE FUNCTION halive_api.home()
@@ -24,8 +24,8 @@ END
 $function$
 LANGUAGE plpgsql STABLE;
 
--- GET /rpc/get_stream_info?author=HIVE_USERNAME&link=STREAM_LINK
-CREATE OR REPLACE FUNCTION halive_api.get_stream_info(author VARCHAR, link VARCHAR)
+-- GET /rpc/get_stream_info?stream_author=HIVE_USERNAME&stream_link=STREAM_LINK
+CREATE OR REPLACE FUNCTION halive_api.get_stream_info(stream_author VARCHAR, stream_link VARCHAR)
 RETURNS jsonb
 AS
 $function$
@@ -46,7 +46,7 @@ DECLARE
     _storage_gw VARCHAR;
     _ended BOOLEAN;
 BEGIN
-    SELECT id INTO _hive_user_id FROM hive.halive_app_accounts WHERE name=author;
+    SELECT id INTO _hive_user_id FROM hive.halive_app_accounts WHERE name=stream_author;
     IF _hive_user_id IS NULL THEN
         RETURN jsonb_build_object('error', 'Streamer does not exist');
     END IF;
@@ -54,7 +54,7 @@ BEGIN
     SELECT EXISTS INTO _exists (
         SELECT 1
         FROM halive_app.streams st
-        WHERE st.streamer=_hive_user_id AND st.link=link);
+        WHERE st.streamer=_hive_user_id AND st.link=stream_link);
 
     IF _exists IS FALSE THEN
         RETURN jsonb_build_object('error', 'Stream does not exist');
@@ -63,13 +63,13 @@ BEGIN
     SELECT id, st_id, created, last_updated, first_streamed, last_streamed, chunk_finalized, chunk_head, l2_protocol, l2_pub, storage_protocol, storage_gw, ended
         INTO _st_id_glob, _st_id, _created, _last_updated, _first_streamed, _last_streamed, _chunk_finalized, _chunk_head, _l2_protocol, _l2_pub, _storage_protocol, _storage_gw, _ended
         FROM halive_app.streams
-        WHERE streamer=_hive_user_id AND link=link;
+        WHERE streamer=_hive_user_id AND link=stream_link;
     
     RETURN jsonb_build_object(
         'id', _st_id_glob,
         'st_id', _st_id,
-        'streamer', author,
-        'link', link,
+        'streamer', stream_author,
+        'link', stream_link,
         'created', _created,
         'last_updated', _last_updated,
         'first_streamed', _first_streamed,
@@ -106,8 +106,8 @@ END
 $function$
 LANGUAGE plpgsql STABLE;
 
--- GET /rpc/get_stream_chunks?author=HIVE_USERNAME&link=STREAM_LINK
-CREATE OR REPLACE FUNCTION halive_api.get_stream_chunks(author VARCHAR, link VARCHAR)
+-- GET /rpc/get_stream_chunks?stream_author=HIVE_USERNAME&stream_link=STREAM_LINK
+CREATE OR REPLACE FUNCTION halive_api.get_stream_chunks(stream_author VARCHAR, stream_link VARCHAR)
 RETURNS jsonb
 AS
 $function$
@@ -117,11 +117,10 @@ DECLARE
     stream_info jsonb;
     chunks_arr jsonb[] DEFAULT '{}';
 BEGIN
-    SELECT halive_api.get_stream_info(author, link) INTO stream_info;
+    SELECT halive_api.get_stream_info(stream_author, stream_link) INTO stream_info;
     IF stream_info ? 'error' THEN
         RETURN stream_info;
     END IF;
-	RAISE NOTICE '%', stream_info;
 	stream_id := stream_info->'id';
     FOR c IN SELECT * FROM halive_api.get_hls_segments(stream_id) LOOP
         SELECT ARRAY_APPEND(chunks_arr, jsonb_build_object(
