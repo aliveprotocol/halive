@@ -13,7 +13,6 @@ let haliveConfig = {
 
     // default endpoints for chunk content retrieval
     ipfs_gateway: 'https://ipfs.io',
-    skynet_webportal: 'https://siasky.net',
 
     // alivedb endpoint
     alivedb_url: 'http://localhost:3006',
