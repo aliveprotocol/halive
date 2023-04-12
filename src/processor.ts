@@ -3,9 +3,10 @@ import { ALIVEDB_PUBKEY_MAX_LENGTH, CUSTOM_JSON_ID, MAX_CHUNKS, MAX_SEGMENT_LENG
 import protocols from './protocols.js'
 import db from './db.js'
 import logger from './logger.js'
+import { ParsedOp } from './processor_types.js'
 
 const processor = {
-    validateAndParse: async (op) => {
+    validateAndParse: async (op: any): Promise<ParsedOp> => {
         try {
             let parsed = JSON.parse(op.body)
             // sanitize and filter custom json
@@ -21,7 +22,7 @@ const processor = {
                 payload.op >= OP_CODES.length || payload.op < 0 || // op code must be valid
                 typeof payload.link !== 'string')
                 return { valid: false }
-            let details = {
+            let details: ParsedOp = {
                 valid: true,
                 op: payload.op,
                 ts: new Date(op.created_at),
@@ -44,7 +45,7 @@ const processor = {
                     // maybe we can optionally use a folder structure to save space on-chain for this
                     for (let q in SUPPORTED_RES)
                         if (payload[SUPPORTED_RES[q]])
-                            details[SUPPORTED_RES[q]] = payload[SUPPORTED_RES[q]]
+                            details[parseInt(SUPPORTED_RES[q])] = payload[SUPPORTED_RES[q]]
                     if (payload.len) {
                         details.len = parseFloat(payload.len)
                         if (isNaN(details.len))
@@ -61,7 +62,7 @@ const processor = {
                     // configure/update stream
                     let inStorageProto = typeof payload.storage === 'string' ? payload.storage.trim().toLowerCase() : protocols.defaults.storage
                     let inL2Proto = typeof payload.l2 === 'string' ? payload.l2.trim().toLowerCase() : null
-                    details.storage = Number.isInteger(protocols.map.storage[inStorageProto]) ? protocols.map.storage[inStorageProto] : protocols.defaults.storage
+                    details.storage = Number.isInteger(protocols.map.storage[inStorageProto]) ? protocols.map.storage[inStorageProto] : protocols.map.storage[protocols.defaults.storage]
                     details.l2 = Number.isInteger(protocols.map.l2[inL2Proto]) ? protocols.map.l2[inL2Proto] : null
                     if (typeof payload.pub === 'string' && payload.pub.length <= ALIVEDB_PUBKEY_MAX_LENGTH)
                         details.l2_pub = payload.pub
@@ -77,7 +78,7 @@ const processor = {
             return { valid: false }
         }
     },
-    process: async (op) => {
+    process: async (op: any): Promise<boolean> => {
         let result = await processor.validateAndParse(op)
         if (result.valid) {
             logger.trace('Processing op',result)
