@@ -39,7 +39,7 @@ app.get('/stream/:author/:link', async (req: StreamRequestTypes,res) => {
         return res.status(400).send({ error: 'author and/or link is required' })
     let quality = req.query.quality || 'src'
     let gw = req.query.gw || haliveConfig.ipfs_gateway
-    let fetchTimeout = parseInt(req.query.fetchtimeout)
+    let fetchTimeout = parseInt(req.query.fetchtimeout || '')
     if (isNaN(fetchTimeout) || fetchTimeout <= 0 || fetchTimeout > haliveConfig.chunk_fetch_timeout)
         fetchTimeout = haliveConfig.chunk_fetch_timeout
     let streamQuery = await db.client.query('SELECT halive_api.get_stream_info($1,$2);',[req.params.author,req.params.link])
