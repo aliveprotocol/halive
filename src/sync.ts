@@ -20,13 +20,15 @@ const sync = {
         await context.attach(head)
         sync.begin()
     },
-    begin: async () => {
+    begin: async (): Promise<void> => {
         if (sync.terminating) return sync.close()
 
         // query next block
         let nextBlocks = await context.nextBlocks()
-        if (nextBlocks.first_block === null) 
-            return setTimeout(() => sync.begin(),1000)
+        if (nextBlocks.first_block === null) {
+            setTimeout(() => sync.begin(),1000)
+            return
+        }
 
         let firstBlock = nextBlocks.first_block
         let lastBlock = nextBlocks.last_block
@@ -39,7 +41,7 @@ const sync = {
         } else
             sync.live()
     },
-    massive: async (firstBlock,lastBlock,targetBlock) => {
+    massive: async (firstBlock: number, lastBlock: number ,targetBlock: number): Promise<void> => {
         if (sync.terminating) return sync.close()
         let start = new Date().getTime()
         await db.client.query('START TRANSACTION;')
@@ -61,20 +63,22 @@ const sync = {
         else
             sync.massive(lastBlock+1,Math.min(lastBlock+MASSIVE_SYNC_BATCH,targetBlock),targetBlock)
     },
-    postMassive: async (lastBlock) => {
+    postMassive: async (lastBlock: number): Promise<void> => {
         logger.info('Begin post-massive sync')
         await schema.fkCreate()
         logger.info('Post-masstive sync complete, entering live sync')
         await context.attach(lastBlock)
         sync.live()
     },
-    live: async () => {
+    live: async (): Promise<void> => {
         if (sync.terminating) return sync.close()
 
         // query next blocks
         let nextBlock = (await context.nextBlocks()).first_block
-        if (nextBlock === null) 
-            return setTimeout(() => sync.live(),500)
+        if (nextBlock === null) {
+            setTimeout(() => sync.live(),500)
+            return
+        }
 
         let start = new Date().getTime()
         await db.client.query('START TRANSACTION;')
@@ -92,7 +96,7 @@ const sync = {
         logger.info('Alive - Block #'+nextBlock+' - '+count+' ops - '+timeTakenMs+'ms')
         sync.live()
     },
-    close: async () => {
+    close: async (): Promise<void> => {
         await db.disconnect()
         process.exit(0)
     }

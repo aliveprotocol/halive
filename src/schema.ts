@@ -5,15 +5,16 @@ import { START_BLOCK, DB_VERSION, APP_CONTEXT } from './constants.js'
 import db from './db.js'
 import context from './context.js'
 import logger from './logger.js'
+import { FKS_TYPE } from './schema_types.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const SCHEMA_NAME = 'halive_app'
-const HAF_TABLES = [
+const HAF_TABLES: string[] = [
     'streamer',
     'streams',
     'hls_segments'
 ]
-const HAF_FKS = {
+const HAF_FKS: FKS_TYPE = {
     streamer_fk: {
         table: SCHEMA_NAME+'.streamer',
         fk: 'id',
@@ -88,7 +89,7 @@ const schema = {
         await db.client.query(fs.readFileSync(__dirname+'/sql/create_functions.sql','utf-8'))
         logger.info('Created relevant PL/pgSQL functions and types')
     },
-    fkExists: async (fk) => {
+    fkExists: async (fk: string) => {
         let constraint = await db.client.query('SELECT * FROM information_schema.constraint_column_usage WHERE constraint_name=$1',[fk])
         return constraint.rowCount > 0
     },

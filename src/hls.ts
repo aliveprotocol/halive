@@ -3,7 +3,7 @@ import { MAX_CHUNK_BYTES } from './constants.js'
 import logger from './logger.js'
 
 const hls = {
-    fetchChunk: async (chunk_hash) => {
+    fetchChunk: async (chunk_hash: string) => {
         try {
             // fetch headers to retrieve size
             // chunk sizes must not exceed MAX_CHUNK_BYTES
@@ -13,7 +13,7 @@ const hls = {
             clearTimeout(id)
             if (headChunk.status !== 200)
                 return { error: 'head chunk failed with status code '+headChunk.status }
-            let chunkSize = headChunk.headers.get('content-length')
+            let chunkSize = parseInt(headChunk.headers.get('content-length')!)
             if (chunkSize > MAX_CHUNK_BYTES)
                 return { error: 'chunk size is greater than MAX_CHUNK_BYTES' }
             if (headChunk.headers.get('content-type') !== 'text/csv')

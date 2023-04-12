@@ -11,8 +11,8 @@ log4js.configure({
                 pattern: '%[%d [%p] %f{1}:%l%] %x{tab}%m',
                 tokens: {
                     tab: (logEvent) => {
-                        let filepath = logEvent.fileName.split('/')
-                        return ' '.repeat(Math.max(0,18-filepath[filepath.length-1].length+1-logEvent.lineNumber.toString().length-logEvent.level.levelStr.length))
+                        let filepath = logEvent.fileName!.split('/')
+                        return ' '.repeat(Math.max(0,18-filepath[filepath.length-1].length+1-logEvent.lineNumber!.toString().length-logEvent.level.levelStr.length))
                     }
                 }
             }

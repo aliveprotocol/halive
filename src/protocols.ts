@@ -1,8 +1,9 @@
 import db from './db.js'
 import logger from './logger.js'
+import { ProtocolObj } from './protocols_types.js'
 
 // protocol_name -> id mapping
-const protocols = {
+const protocols: ProtocolObj = {
     map: {
         storage: {},
         l2: {}
@@ -11,7 +12,7 @@ const protocols = {
         storage: 'ipfs',
         l2: 'gundb' // todo future defaults?
     },
-    retrieveMap: async () => {
+    retrieveMap: async (): Promise<void> => {
         let storage = await db.client.query('SELECT * FROM halive_app.storage_protocols;')
         let l2 = await db.client.query('SELECT * FROM halive_app.l2_protocols;')
         for (let i in storage.rows)
