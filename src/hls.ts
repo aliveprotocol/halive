@@ -27,10 +27,10 @@ const hls = {
             if (fetchedChunk.status !== 200)
                 return { error: 'fetch chunk failed with status code '+fetchedChunk.status }
             return { error: null, chunk: await fetchedChunk.text() }
-        } catch (e) {
+        } catch (e: any) {
             logger.trace(e)
             if (e.name === 'AbortError')
-                return { error: 'chunk fetch requet timeout' }
+                return { error: 'chunk fetch request timeout' }
             return { error: 'unknown error when fetching chunk' }
         }
     }

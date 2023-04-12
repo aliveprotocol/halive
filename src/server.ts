@@ -4,6 +4,7 @@ import logger from './logger.js'
 import haliveConfig from './config.js'
 import db from './db.js'
 import hls from './hls.js'
+import { StreamRequestTypes } from './server_types.js'
 
 await db.init()
 const app = express()
@@ -33,7 +34,7 @@ app.get('/get_stream_chunks', async (req,res) => {
     res.send(streamQuery.rows[0].get_stream_chunks)
 })
 
-app.get('/stream/:author/:link', async (req,res) => {
+app.get('/stream/:author/:link', async (req: StreamRequestTypes,res) => {
     if (typeof req.params.author !== 'string' || typeof req.params.link !== 'string')
         return res.status(400).send({ error: 'author and/or link is required' })
     let quality = req.query.quality || 'src'
@@ -57,7 +58,7 @@ app.get('/stream/:author/:link', async (req,res) => {
     for (let i in chunks.rows) {
         if (!chunks.rows[i][quality+'_hash'])
             continue
-        let chunkLines = []
+        let chunkLines: any[] = []
         if (!chunks.rows[i].len) {
             let chunkContents = await hls.fetchChunk(chunks.rows[i][quality+'_hash'])
             if (chunkContents.error || !chunkContents.chunk)
