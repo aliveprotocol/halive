@@ -167,3 +167,34 @@ BEGIN
 END
 $function$
 LANGUAGE plpgsql VOLATILE;
+
+-- Get cached chunk contents
+CREATE OR REPLACE FUNCTION halive_app.cached_chunk_contents(_file_hash VARCHAR, _storage_protocol INTEGER)
+RETURNS VARCHAR
+AS
+$function$
+DECLARE
+    _result VARCHAR = '';
+BEGIN
+    SELECT body INTO _result
+    FROM halive_app.hls_chunk_contents
+    WHERE file_hash=_file_hash AND storage_protocol=_storage_protocol;
+
+    RETURN _result;
+END
+$function$
+LANGUAGE plpgsql STABLE;
+
+-- Cache chunk
+CREATE OR REPLACE FUNCTION halive_app.cache_chunk(_file_hash VARCHAR, _storage_protocol INTEGER, _contents VARCHAR)
+RETURNS void
+AS
+$function$
+BEGIN
+    INSERT INTO halive_app.hls_chunk_contents(file_hash, storage_protocol, body)
+    VALUES(_file_hash, _storage_protocol, _contents)
+    ON CONFLICT (file_hash) DO UPDATE
+    SET body=_contents;
+END
+$function$
+LANGUAGE plpgsql VOLATILE;

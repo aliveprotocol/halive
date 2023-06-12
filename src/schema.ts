@@ -73,7 +73,7 @@ const schema = {
         // fill with initial values
         await db.client.query(`INSERT INTO ${SCHEMA_NAME}.l2_protocols(protocol_name) VALUES('gundb');`)
         await db.client.query(`INSERT INTO ${SCHEMA_NAME}.storage_protocols(protocol_name) VALUES('ipfs');`)
-        await db.client.query(`INSERT INTO ${SCHEMA_NAME}.storage_protocols(protocol_name) VALUES('skynet');`)
+        // await db.client.query(`INSERT INTO ${SCHEMA_NAME}.storage_protocols(protocol_name) VALUES('skynet');`)
         await db.client.query(`INSERT INTO ${SCHEMA_NAME}.state(last_processed_block, db_version) VALUES($1, $2);`,[startBlock,DB_VERSION])
 
         // create relevant functions
