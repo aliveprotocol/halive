@@ -17,7 +17,7 @@ BEGIN
             id,
             block_num,
             created_at,
-            body
+            body::TEXT
         FROM hive.halive_app_operations_view
         JOIN hive.halive_app_blocks_view ON hive.halive_app_blocks_view.num = block_num
         WHERE block_num >= _first_block AND block_num <= _last_block AND op_type_id=18
