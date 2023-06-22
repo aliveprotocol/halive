@@ -8,6 +8,7 @@ import protocols from './protocols.js'
 import { StreamRequestTypes } from './server_types.js'
 
 await db.init()
+await protocols.retrieveMap()
 const app = express()
 app.use(cors())
 
@@ -62,7 +63,7 @@ app.get('/stream/:author/:link', async (req: StreamRequestTypes,res) => {
         let chunkLines: any[] = []
         if (!chunks.rows[i].len) {
             let chunkCached = await db.client.query('SELECT halive_app.cached_chunk_contents($1,$2);',[chunks.rows[i][quality+'_hash'],protocols.map.storage.ipfs])
-            if (chunkCached.rowCount === 0 || chunkCached.rows[0].length === 0) {
+            if (chunkCached.rowCount === 0 || !chunkCached.rows[0].cached_chunk_contents) {
                 let chunkContents = await hls.fetchChunk(chunks.rows[i][quality+'_hash'])
                 if (chunkContents.error || !chunkContents.chunk)
                     continue
@@ -71,7 +72,7 @@ app.get('/stream/:author/:link', async (req: StreamRequestTypes,res) => {
                 // cache chunk contents async
                 db.client.query('SELECT halive_app.cache_chunk($1,$2,$3);',[chunks.rows[i][quality+'_hash'],protocols.map.storage.ipfs,chunkContents.chunk])
             } else
-                chunkLines = chunkCached.rows[0].split('\n')
+                chunkLines = chunkCached.rows[0].cached_chunk_contents.split('\n')
         } else {
             // unbundled segments submitted to L1
             chunkLines = [chunks.rows[i][quality+'_hash']+','+chunks.rows[i].len]
