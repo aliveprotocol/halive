@@ -61,7 +61,7 @@ app.get('/stream/:author/:link', async (req: StreamRequestTypes,res) => {
             continue
         let chunkLines: any[] = []
         if (!chunks.rows[i].len) {
-            let chunkCached = await db.client.query('SELECT halive_api.cached_chunk_contents($1,$2);',[chunks.rows[i][quality+'_hash'],protocols.map.storage.ipfs])
+            let chunkCached = await db.client.query('SELECT halive_app.cached_chunk_contents($1,$2);',[chunks.rows[i][quality+'_hash'],protocols.map.storage.ipfs])
             if (chunkCached.rowCount === 0 || chunkCached.rows[0].length === 0) {
                 let chunkContents = await hls.fetchChunk(chunks.rows[i][quality+'_hash'])
                 if (chunkContents.error || !chunkContents.chunk)
