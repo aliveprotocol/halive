@@ -1,4 +1,4 @@
-import log4js from 'log4js'
+import log4js, {LoggingEvent} from 'log4js'
 import haliveConfig from './config.js'
 
 log4js.configure({
@@ -10,7 +10,7 @@ log4js.configure({
                 type: 'pattern',
                 pattern: '%[%d [%p] %f{1}:%l%] %x{tab}%m',
                 tokens: {
-                    tab: (logEvent) => {
+                    tab: (logEvent: LoggingEvent) => {
                         let filepath = logEvent.fileName!.split('/')
                         return ' '.repeat(Math.max(0,18-filepath[filepath.length-1].length+1-logEvent.lineNumber!.toString().length-logEvent.level.levelStr.length))
                     }
