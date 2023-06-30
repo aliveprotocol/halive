@@ -1,18 +1,18 @@
 # HAlive base image
-FROM node:18 AS halive
+FROM node:18-slim AS halive
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
 
 # HAlive sync
-FROM node:18 AS halive_sync
+FROM node:18-slim AS halive_sync
 WORKDIR /app
 COPY --from=halive /app ./
 CMD ["npm", "start"]
 
 # HAlive server
-FROM node:18 AS halive_server
+FROM node:18-slim AS halive_server
 WORKDIR /app
 COPY --from=halive /app ./
 ENV HALIVE_HTTP_PORT=3010
