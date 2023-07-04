@@ -15,6 +15,7 @@ const processor = {
                 parsed.value.id !== CUSTOM_JSON_ID ||
                 !Array.isArray(parsed.value.required_posting_auths) ||
                 parsed.value.required_posting_auths.length > 1 || // who is really transacting in multisig?
+                parsed.value.required_posting_auths.length === 0 || // use posting auth only
                 !parsed.value.json)
                 return { valid: false }
             let payload = JSON.parse(parsed.value.json)
