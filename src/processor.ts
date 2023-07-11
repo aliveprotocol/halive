@@ -6,7 +6,7 @@ import logger from './logger.js'
 import { ParsedOp } from './processor_types.js'
 
 const processor = {
-    validateAndParse: async (op: any): Promise<ParsedOp> => {
+    validateAndParse: async (op: any, ts: Date): Promise<ParsedOp> => {
         try {
             let parsed = JSON.parse(op.body)
             // sanitize and filter custom json
@@ -26,7 +26,7 @@ const processor = {
             let details: ParsedOp = {
                 valid: true,
                 op: payload.op,
-                ts: new Date(op.created_at),
+                ts: ts,
                 streamer: parsed.value.required_posting_auths[0],
                 link: payload.link
             }
@@ -79,8 +79,8 @@ const processor = {
             return { valid: false }
         }
     },
-    process: async (op: any): Promise<boolean> => {
-        let result = await processor.validateAndParse(op)
+    process: async (op: any, ts: Date): Promise<boolean> => {
+        let result = await processor.validateAndParse(op, ts)
         if (result.valid) {
             logger.trace('Processing op',result)
             switch (result.op) {

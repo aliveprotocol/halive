@@ -2,7 +2,6 @@ DROP TYPE IF EXISTS halive_app.op_type CASCADE;
 CREATE TYPE halive_app.op_type AS (
     id BIGINT,
     block_num INT,
-    created_at TIMESTAMP,
     body TEXT
 );
 
@@ -16,12 +15,33 @@ BEGIN
         SELECT
             id,
             block_num,
-            created_at,
             body::TEXT
         FROM hive.halive_app_operations_view
-        JOIN hive.halive_app_blocks_view ON hive.halive_app_blocks_view.num = block_num
         WHERE block_num >= _first_block AND block_num <= _last_block AND op_type_id=18
         ORDER BY block_num, id;
+END
+$function$
+LANGUAGE plpgsql STABLE;
+
+DROP TYPE IF EXISTS halive_app.block_type CASCADE;
+CREATE TYPE halive_app.block_type AS (
+    num INTEGER,
+    created_at TIMESTAMP
+);
+
+CREATE OR REPLACE FUNCTION halive_app.enum_block(IN _first_block INT, IN _last_block INT)
+RETURNS SETOF halive_app.block_type
+AS
+$function$
+BEGIN
+    -- Fetch block headers
+    RETURN QUERY
+        SELECT
+            num,
+            created_at
+        FROM hive.halive_app_blocks_view
+        WHERE num >= _first_block AND num <= _last_block
+        ORDER BY num;
 END
 $function$
 LANGUAGE plpgsql STABLE;

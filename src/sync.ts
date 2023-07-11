@@ -48,17 +48,17 @@ const sync = {
         let start = new Date().getTime()
         await db.client.query('START TRANSACTION;')
         await db.client.query('SELECT hive.app_state_providers_update($1,$2,$3);',[firstBlock,lastBlock,APP_CONTEXT])
+        let blocks = await db.client.query('SELECT * FROM halive_app.enum_block($1,$2);',[firstBlock,lastBlock])
         let ops = await db.client.query('SELECT * FROM halive_app.enum_op($1,$2);',[firstBlock,lastBlock])
         let count = 0
         for (let op in ops.rows) {
-            let processed = await processor.process(ops.rows[op])
+            let processed = await processor.process(ops.rows[op], blocks.rows[ops.rows[op].block_num-firstBlock].created_at)
             if (processed)
                 count++
         }
         await db.client.query('UPDATE halive_app.state SET last_processed_block=$1;',[lastBlock])
         await db.client.query('COMMIT;')
         let timeTaken = (new Date().getTime()-start)/1000
-        logger.debug('Commited ['+firstBlock+','+lastBlock+'] successfully')
         logger.info('Massive Sync - Block #'+firstBlock+' to #'+lastBlock+' / '+targetBlock+' - '+count+' ops - '+((lastBlock-firstBlock)/timeTaken).toFixed(3)+'b/s, '+(count/timeTaken).toFixed(3)+'op/s')
         if (lastBlock >= targetBlock)
             sync.postMassive(targetBlock)
@@ -87,10 +87,11 @@ const sync = {
         let start = new Date().getTime()
         await db.client.query('START TRANSACTION;')
         await db.client.query('SELECT hive.app_state_providers_update($1,$2,$3);',[nextBlock,nextBlock,APP_CONTEXT])
+        let blocks = await db.client.query('SELECT * FROM halive_app.enum_block($1,$2);',[nextBlock,nextBlock])
         let ops = await db.client.query('SELECT * FROM halive_app.enum_op($1,$2);',[nextBlock,nextBlock])
         let count = 0
         for (let op in ops.rows) {
-            let processed = await processor.process(ops.rows[op])
+            let processed = await processor.process(ops.rows[op], blocks.rows[0].created_at)
             if (processed)
                 count++
         }
