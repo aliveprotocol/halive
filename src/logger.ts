@@ -28,7 +28,7 @@ log4js.configure({
     categories: { 
         default: { 
             appenders: ['out', 'file'],
-            level: haliveConfig.log_level,
+            level: haliveConfig.logLevel,
             enableCallStack: true
         }
     }

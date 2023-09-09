@@ -40,10 +40,10 @@ app.get('/stream/:author/:link', async (req: StreamRequestTypes,res) => {
     if (typeof req.params.author !== 'string' || typeof req.params.link !== 'string')
         return res.status(400).send({ error: 'author and/or link is required' })
     let quality = req.query.quality || 'src'
-    let gw = req.query.gw || haliveConfig.ipfs_gateway
+    let gw = req.query.gw || haliveConfig.ipfsGateway
     let fetchTimeout = parseInt(req.query.fetchtimeout || '')
-    if (isNaN(fetchTimeout) || fetchTimeout <= 0 || fetchTimeout > haliveConfig.chunk_fetch_timeout)
-        fetchTimeout = haliveConfig.chunk_fetch_timeout
+    if (isNaN(fetchTimeout) || fetchTimeout <= 0 || fetchTimeout > haliveConfig.chunkFetchTimeout)
+        fetchTimeout = haliveConfig.chunkFetchTimeout
     let streamQuery = await db.client.query('SELECT halive_api.get_stream_info($1,$2);',[req.params.author,req.params.link])
     if (streamQuery.rowCount === 0)
         return res.status(404).send({ error: 'stream not found' })
@@ -90,7 +90,7 @@ app.get('/stream/:author/:link', async (req: StreamRequestTypes,res) => {
     else if (stream.l2_protocol === 'gundb' && stream.l2_pub) {
         // fetch from alivedb
         try {
-            let alivedbFetch = await fetch(`${haliveConfig.alivedb_url}/getStream?pub=${stream.l2_pub}&streamer=${req.params.author}&link=${req.params.link}&network=hive&ts=${new Date(stream.last_streamed).getTime()+1}`,{ method: 'GET' })
+            let alivedbFetch = await fetch(`${haliveConfig.alivedbUrl}/getStream?pub=${stream.l2_pub}&streamer=${req.params.author}&link=${req.params.link}&network=hive&ts=${new Date(stream.last_streamed).getTime()+1}`,{ method: 'GET' })
             let alivedbResp = await alivedbFetch.json()
             if (Array.isArray(alivedbResp))
                 for (let i in alivedbResp)
@@ -106,8 +106,8 @@ app.get('/stream/:author/:link', async (req: StreamRequestTypes,res) => {
     res.send(m3u8File)
 })
 
-const server = app.listen(haliveConfig.http_port,haliveConfig.http_host,() => {
-    logger.info(`HAlive HLS server listening to ${haliveConfig.http_host+':'+haliveConfig.http_port}`)
+const server = app.listen(haliveConfig.httpPort,haliveConfig.httpHost,() => {
+    logger.info(`HAlive HLS server listening to ${haliveConfig.httpHost+':'+haliveConfig.httpPort}`)
 })
 
 let terminating = false

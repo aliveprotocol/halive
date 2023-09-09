@@ -18,8 +18,8 @@ const hls = {
                 // usually starts with 'Qm' or 'bafybei'
                 // cids starting with Qm are ideal for single-res Hive L1 due to lower RC consumption as it is more compact
                 let controller = new AbortController()
-                const id = setTimeout(() => controller.abort(), haliveConfig.chunk_fetch_timeout*1000)
-                let headChunk = await fetch(haliveConfig.ipfs_gateway+'/ipfs/'+chunk_hash,{ method: 'HEAD', signal: controller.signal })
+                const id = setTimeout(() => controller.abort(), haliveConfig.chunkFetchTimeout*1000)
+                let headChunk = await fetch(haliveConfig.ipfsGateway+'/ipfs/'+chunk_hash,{ method: 'HEAD', signal: controller.signal })
                 clearTimeout(id)
                 if (headChunk.status !== 200)
                     return { error: 'head chunk failed with status code '+headChunk.status }
@@ -31,8 +31,8 @@ const hls = {
 
                 // fetch chunk content
                 let controller2 = new AbortController()
-                const id2 = setTimeout(() => controller2.abort(), haliveConfig.chunk_fetch_timeout*1000)
-                let fetchedChunk = await fetch(haliveConfig.ipfs_gateway+'/ipfs/'+chunk_hash,{ method: 'GET', signal: controller2.signal })
+                const id2 = setTimeout(() => controller2.abort(), haliveConfig.chunkFetchTimeout*1000)
+                let fetchedChunk = await fetch(haliveConfig.ipfsGateway+'/ipfs/'+chunk_hash,{ method: 'GET', signal: controller2.signal })
                 clearTimeout(id2)
                 if (fetchedChunk.status !== 200)
                     return { error: 'fetch chunk failed with status code '+fetchedChunk.status }
