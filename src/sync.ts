@@ -8,6 +8,7 @@ import { APP_CONTEXT } from './constants.js'
 
 const MASSIVE_SYNC_THRESHOLD = 100
 const MASSIVE_SYNC_BATCH = 1000
+const LIVE_SYNC_CONNECTION_CYCLE_BLKS = 1000
 
 const sync = {
     terminating: false,
@@ -99,6 +100,10 @@ const sync = {
         await db.client.query('COMMIT;')
         let timeTakenMs = new Date().getTime()-start
         logger.info('Alive - Block #'+nextBlock+' - '+count+' ops - '+timeTakenMs+'ms')
+        if (nextBlock! % LIVE_SYNC_CONNECTION_CYCLE_BLKS === 0) {
+            // restart db connection every 1k blocks to ensure no memory leak from long running db connection
+            await db.restart()
+        }
         sync.live()
     },
     close: async (): Promise<void> => {

@@ -13,6 +13,11 @@ const db = {
         await client.end()
         logger.info('Disconnected from database')
     },
+    restart: async () => {
+        await db.client.end()
+        db.client = new pg.Client({ connectionString: haliveConfig.postgres_url })
+        await db.client.connect()
+    },
     client: client
 }
 
