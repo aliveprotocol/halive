@@ -5,5 +5,6 @@ export interface StreamRequestTypes extends express.Request {
         quality?: string
         gw?: string
         fetchtimeout?: string
+        l1only?: string
     }
 }

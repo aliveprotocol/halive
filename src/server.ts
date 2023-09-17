@@ -87,7 +87,7 @@ app.get('/stream/:author/:link', async (req: StreamRequestTypes,res) => {
     }
     if (stream.ended)
         m3u8File += '#EXT-X-ENDLIST'
-    else if (stream.l2_protocol === 'gundb' && stream.l2_pub) {
+    else if ((!req.query.l1only || req.query.l1only !== '1') && stream.l2_protocol === 'gundb' && stream.l2_pub) {
         // fetch from alivedb
         try {
             let alivedbFetch = await fetch(`${haliveConfig.alivedbUrl}/getStream?pub=${stream.l2_pub}&streamer=${req.params.author}&link=${req.params.link}&network=hive&ts=${new Date(stream.last_streamed).getTime()+1}`,{ method: 'GET' })

@@ -6,6 +6,7 @@ HAF-based Alive Protocol streams indexer and API server. Indexes Hive from a sta
 
 * `nodejs` and `npm` (Latest LTS, v18 minimum supported)
 * Synced [HAF](https://gitlab.syncad.com/hive/haf) node
+* [AliveDB node](https://github.com/aliveprotocol/AliveDB)
 
 A locally-running IPFS daemon is recommended for faster chunk fetching.
 
