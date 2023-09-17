@@ -5,9 +5,11 @@
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
-    "start": "tsc && node dist/index.js",
-    "server": "tsc && node dist/server.js",
-    "transpile": "tsc",
+    "start": "node dist/index.js",
+    "server": "node dist/server.js",
+    "compile": "tsc; cp -r src/sql dist",
+    "dev": "node --loader ts-node/esm src/index.ts",
+    "dev-server": "node --loader ts-node/esm src/server.ts",
     "clean": "rm -rf dist/*",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -36,6 +38,7 @@
     "@types/express": "^4.17.17",
     "@types/pg": "^8.10.2",
     "@types/yargs": "^17.0.24",
+    "ts-node": "^10.9.1",
     "typescript": "^5.1.6"
   }
 }

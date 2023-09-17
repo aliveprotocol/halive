@@ -3,6 +3,7 @@ FROM node:18-slim AS halive
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
+RUN npm run compile
 COPY . .
 
 # HAlive sync

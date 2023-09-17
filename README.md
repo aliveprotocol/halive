@@ -30,6 +30,18 @@ GRANT halive_user TO halive_app;
 psql -f src/sql/create_apis.sql block_log
 ```
 
+## Installation
+```
+git clone https://github.com/aliveprotocol/halive
+cd halive
+npm i
+```
+
+## Compile
+```
+npm run compile
+```
+
 ## Sync
 ```bash
 npm start
