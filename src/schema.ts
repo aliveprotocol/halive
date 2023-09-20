@@ -10,9 +10,9 @@ import { FKS_TYPE } from './schema_types.js'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const SCHEMA_NAME = 'halive_app'
 const HAF_TABLES: string[] = [
-    'streamer',
-    'streams',
-    'hls_segments'
+    // 'streamer',
+    // 'streams',
+    // 'hls_segments'
 ]
 const HAF_FKS: FKS_TYPE = {
     streamer_fk: {

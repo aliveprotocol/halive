@@ -15,13 +15,13 @@ CREATE TABLE IF NOT EXISTS halive_app.hls_chunk_contents(
 );
 
 CREATE TABLE IF NOT EXISTS halive_app.streamer(
-    hive_rowid BIGINT NOT NULL DEFAULT nextval('hive.halive_app_hive_rowid_seq'),
+    -- hive_rowid BIGINT NOT NULL DEFAULT nextval('hive.halive_app_hive_rowid_seq'),
     id INTEGER PRIMARY KEY,
     next_stream_id INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS halive_app.streams(
-    hive_rowid BIGINT NOT NULL DEFAULT nextval('hive.halive_app_hive_rowid_seq'),
+    -- hive_rowid BIGINT NOT NULL DEFAULT nextval('hive.halive_app_hive_rowid_seq'),
     id SERIAL PRIMARY KEY,
     st_id INTEGER NOT NULL,
     streamer INTEGER NOT NULL,
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS halive_app.streams(
 );
 
 CREATE TABLE IF NOT EXISTS halive_app.hls_segments(
-    hive_rowid BIGINT NOT NULL DEFAULT nextval('hive.halive_app_hive_rowid_seq'),
+    -- hive_rowid BIGINT NOT NULL DEFAULT nextval('hive.halive_app_hive_rowid_seq'),
     id SERIAL PRIMARY KEY,
     stream_id INTEGER NOT NULL,
     seq INTEGER NOT NULL,
